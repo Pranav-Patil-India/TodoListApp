@@ -20,6 +20,16 @@ class TodoListViewController: UIViewController {
     private let addButton = UIButton()
     private var todoListData = [TodoListModel]()
 
+    private let inputTextView = UITextView()
+    private let userInputContainerView = UIView()
+
+    private var isKeyboardVisible = false
+
+    private var userInputContainerViewBottomConstraint: NSLayoutConstraint?
+    private lazy var hideKeyboardTapGesture = UITapGestureRecognizer(
+        target: self,
+        action: #selector(hideKeyboard))
+
     // MARK: - Inits
 
     init() {
@@ -27,6 +37,7 @@ class TodoListViewController: UIViewController {
         todoListData = LocalDataService.fetchDataFromDatabase()
         setupTableView()
         setupAddButton()
+        setupUserInputContainerView()
 
         navigationItem.title = "TODOs"
     }
@@ -43,9 +54,45 @@ class TodoListViewController: UIViewController {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "TodoListCell")
         tableView.dataSource = self
         tableView.delegate = self
+
+        // Keyboard observer
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillShow),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillHide),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil)
     }
 
     // MARK: - Private methods
+
+    private func setupUserInputContainerView() {
+        userInputContainerView.isHidden = true
+        userInputContainerView.backgroundColor = UIColor.colorFromRGB(rgbValue: 0xF5F5F5)
+        view.addSubview(userInputContainerView)
+        userInputContainerView.translatesAutoresizingMaskIntoConstraints = false
+        let userInputContainerViewBottomConstraint = userInputContainerView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        NSLayoutConstraint.activate([
+            userInputContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            userInputContainerViewBottomConstraint,
+            userInputContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+        self.userInputContainerViewBottomConstraint = userInputContainerViewBottomConstraint
+
+        userInputContainerView.addSubview(inputTextView)
+        inputTextView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            inputTextView.topAnchor.constraint(equalTo: userInputContainerView.topAnchor, constant: 5),
+            inputTextView.leadingAnchor.constraint(equalTo: userInputContainerView.leadingAnchor, constant: 12),
+            inputTextView.bottomAnchor.constraint(equalTo: userInputContainerView.bottomAnchor, constant: -5),
+            inputTextView.trailingAnchor.constraint(equalTo: userInputContainerView.trailingAnchor, constant: -12),
+            inputTextView.heightAnchor.constraint(equalToConstant: 50)
+        ])
+    }
 
     private func setupTableView() {
         view.addSubview(tableView)
@@ -59,6 +106,7 @@ class TodoListViewController: UIViewController {
     }
 
     private func setupAddButton() {
+        addButton.addTarget(self, action: #selector(addButtonTapped), for: .touchUpInside)
         view.addSubview(addButton)
         addButton.clipsToBounds = true
         addButton.layer.cornerRadius = Self.addButtonDimension/2
@@ -81,6 +129,33 @@ class TodoListViewController: UIViewController {
         addButton.setImage(UIImage(systemName: "plus", withConfiguration: configuration), for: .normal)
         addButton.backgroundColor = UIColor.colorFromRGB(rgbValue: 0x6499E9)
         addButton.tintColor = .white
+    }
+
+    // MARK: - Action handler
+
+    @objc private func addButtonTapped() {
+        userInputContainerView.isHidden = false
+        inputTextView.becomeFirstResponder()
+        view.addGestureRecognizer(hideKeyboardTapGesture)
+    }
+
+    @objc private func keyboardWillShow(notification: Notification) {
+        if !isKeyboardVisible, inputTextView.isFirstResponder,
+            let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
+            userInputContainerViewBottomConstraint?.constant -= keyboardSize.height
+        }
+        isKeyboardVisible = true
+    }
+
+    @objc private func keyboardWillHide() {
+        isKeyboardVisible = false
+        userInputContainerViewBottomConstraint?.constant = 0
+        userInputContainerView.isHidden = true
+    }
+
+    @objc private func hideKeyboard() {
+        inputTextView.resignFirstResponder()
+        view.removeGestureRecognizer(hideKeyboardTapGesture)
     }
 
 }
