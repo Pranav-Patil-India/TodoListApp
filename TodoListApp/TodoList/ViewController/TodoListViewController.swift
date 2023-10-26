@@ -7,40 +7,100 @@
 
 import UIKit
 
-class TodoListViewController: UITableViewController {
+class TodoListViewController: UIViewController {
 
+    // MARK: - Constants
+
+    private static let addButtonDimension = 60.0
+    private static let addButtonPadding = 20.0
+
+    // MARK: - Private properties
+
+    private let tableView = UITableView()
+    private let addButton = UIButton()
     private var todoListData = [TodoListModel]()
+
+    // MARK: - Inits
 
     init() {
         super.init(nibName: nil, bundle: nil)
         todoListData = LocalDataService.fetchDataFromDatabase()
+        setupTableView()
+        setupAddButton()
 
+        navigationItem.title = "TODOs"
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
+    // MARK: - Overriden methods
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        navigationItem.title = "TODOs"
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "TodoListCell")
+        tableView.dataSource = self
+        tableView.delegate = self
     }
 
-    // MARK: - UITableViewDataSource
+    // MARK: - Private methods
 
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    private func setupTableView() {
+        view.addSubview(tableView)
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: view.topAnchor),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+    }
+
+    private func setupAddButton() {
+        view.addSubview(addButton)
+        addButton.clipsToBounds = true
+        addButton.layer.cornerRadius = Self.addButtonDimension/2
+        addButton.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            addButton.bottomAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.bottomAnchor,
+                constant: -Self.addButtonPadding),
+            addButton.trailingAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.trailingAnchor,
+                constant: -Self.addButtonPadding),
+            addButton.widthAnchor.constraint(equalToConstant: Self.addButtonDimension),
+            addButton.heightAnchor.constraint(equalToConstant: Self.addButtonDimension)
+        ])
+
+        let configuration = UIImage.SymbolConfiguration(
+            pointSize: Self.addButtonDimension/2,
+            weight: .regular,
+            scale: .medium)
+        addButton.setImage(UIImage(systemName: "plus", withConfiguration: configuration), for: .normal)
+        addButton.backgroundColor = UIColor.colorFromRGB(rgbValue: 0x6499E9)
+        addButton.tintColor = .white
+    }
+
+}
+
+// MARK: - UITableViewDelegate, UITableViewDataSource
+
+extension TodoListViewController: UITableViewDelegate, UITableViewDataSource {
+
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return todoListData.count
     }
 
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell()
         cell.selectionStyle = .none
         cell.textLabel?.text = todoListData[indexPath.row].title
         return cell
     }
 
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let cell = tableView.cellForRow(at: indexPath) else {
             print("Error getting cell")
             return
@@ -54,6 +114,5 @@ class TodoListViewController: UITableViewController {
         cell.accessoryType = shouldMarkAsCompleted ? .checkmark : .none
         cell.alpha = shouldMarkAsCompleted ? 0.5 : 1
     }
-
 
 }
