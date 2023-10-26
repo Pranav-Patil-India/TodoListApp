@@ -7,12 +7,16 @@
 
 class LocalDataService {
 
+    // MARK: - Private properties
+
     private static var dummyData = [
         TodoListModel(title: "Apple", isCompleted: false),
         TodoListModel(title: "Pen", isCompleted: false),
         TodoListModel(title: "Banana", isCompleted: false),
         TodoListModel(title: "Grapes", isCompleted: false)
     ]
+
+    // MARK: - Public helpers
 
     static func fetchDataFromDatabase() -> [TodoListModel] {
         return dummyData

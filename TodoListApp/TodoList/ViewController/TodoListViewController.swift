@@ -9,12 +9,18 @@ import UIKit
 
 class TodoListViewController: UIViewController {
 
+    // MARK: - Constants
+
     private static let addButtonDimension = 60.0
     private static let addButtonPadding = 20.0
+
+    // MARK: - Private properties
 
     private let tableView = UITableView()
     private let addButton = UIButton()
     private var todoListData = [TodoListModel]()
+
+    // MARK: - Inits
 
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -22,11 +28,14 @@ class TodoListViewController: UIViewController {
         setupTableView()
         setupAddButton()
 
+        navigationItem.title = "TODOs"
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+
+    // MARK: - Overriden methods
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -34,9 +43,9 @@ class TodoListViewController: UIViewController {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "TodoListCell")
         tableView.dataSource = self
         tableView.delegate = self
-
-        navigationItem.title = "TODOs"
     }
+
+    // MARK: - Private methods
 
     private func setupTableView() {
         view.addSubview(tableView)
@@ -47,7 +56,6 @@ class TodoListViewController: UIViewController {
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
-
     }
 
     private func setupAddButton() {
@@ -66,7 +74,10 @@ class TodoListViewController: UIViewController {
             addButton.heightAnchor.constraint(equalToConstant: Self.addButtonDimension)
         ])
 
-        let configuration = UIImage.SymbolConfiguration(pointSize: 30, weight: .regular, scale: .medium)
+        let configuration = UIImage.SymbolConfiguration(
+            pointSize: Self.addButtonDimension/2,
+            weight: .regular,
+            scale: .medium)
         addButton.setImage(UIImage(systemName: "plus", withConfiguration: configuration), for: .normal)
         addButton.backgroundColor = UIColor.colorFromRGB(rgbValue: 0x6499E9)
         addButton.tintColor = .white
