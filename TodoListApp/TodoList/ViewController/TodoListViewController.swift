@@ -11,24 +11,48 @@ class TodoListViewController: UIViewController {
 
     // MARK: - Constants
 
-    private static let addButtonDimension = 60.0
-    private static let addButtonPadding = 20.0
+     private static let addButtonDimension = 60.0
+     private static let addButtonPadding = 20.0
 
     // MARK: - Private properties
 
-    private let tableView = UITableView()
-    private let addButton = UIButton()
     private var todoListData = [TodoListModel]()
-
-    private let inputTextView = UITextView()
-    private let userInputContainerView = UIView()
-
     private var isKeyboardVisible = false
-
     private var userInputContainerViewBottomConstraint: NSLayoutConstraint?
     private lazy var hideKeyboardTapGesture = UITapGestureRecognizer(
         target: self,
         action: #selector(hideKeyboard))
+
+    // MARK: - Subviews
+
+    private lazy var tableView: UITableView = {
+        let tableView = UITableView()
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "TodoListCell")
+        tableView.dataSource = self
+        tableView.delegate = self
+        return tableView
+    }()
+
+    private lazy var addButton: UIButton = {
+        let addButton = UIButton()
+        let configuration = UIImage.SymbolConfiguration(
+            pointSize: Self.addButtonDimension/2,
+            weight: .regular,
+            scale: .medium)
+        addButton.setImage(UIImage(systemName: "plus", withConfiguration: configuration), for: .normal)
+        addButton.backgroundColor = UIColor.colorFromRGB(rgbValue: 0x6499E9)
+        addButton.tintColor = .white
+        addButton.clipsToBounds = true
+        addButton.layer.cornerRadius = Self.addButtonDimension/2
+        addButton.addTarget(self, action: #selector(addButtonTapped), for: .touchUpInside)
+        return addButton
+    }()
+
+    private lazy var userInputContainerView: TodoListUserInputContainerView = {
+        let containerView = TodoListUserInputContainerView()
+        containerView.isHidden = true
+        return containerView
+    }()
 
     // MARK: - Inits
 
@@ -51,10 +75,6 @@ class TodoListViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "TodoListCell")
-        tableView.dataSource = self
-        tableView.delegate = self
-
         // Keyboard observer
         NotificationCenter.default.addObserver(
             self,
@@ -70,30 +90,6 @@ class TodoListViewController: UIViewController {
 
     // MARK: - Private methods
 
-    private func setupUserInputContainerView() {
-        userInputContainerView.isHidden = true
-        userInputContainerView.backgroundColor = UIColor.colorFromRGB(rgbValue: 0xF5F5F5)
-        view.addSubview(userInputContainerView)
-        userInputContainerView.translatesAutoresizingMaskIntoConstraints = false
-        let userInputContainerViewBottomConstraint = userInputContainerView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        NSLayoutConstraint.activate([
-            userInputContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            userInputContainerViewBottomConstraint,
-            userInputContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-        ])
-        self.userInputContainerViewBottomConstraint = userInputContainerViewBottomConstraint
-
-        userInputContainerView.addSubview(inputTextView)
-        inputTextView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            inputTextView.topAnchor.constraint(equalTo: userInputContainerView.topAnchor, constant: 5),
-            inputTextView.leadingAnchor.constraint(equalTo: userInputContainerView.leadingAnchor, constant: 12),
-            inputTextView.bottomAnchor.constraint(equalTo: userInputContainerView.bottomAnchor, constant: -5),
-            inputTextView.trailingAnchor.constraint(equalTo: userInputContainerView.trailingAnchor, constant: -12),
-            inputTextView.heightAnchor.constraint(equalToConstant: 50)
-        ])
-    }
-
     private func setupTableView() {
         view.addSubview(tableView)
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -106,10 +102,7 @@ class TodoListViewController: UIViewController {
     }
 
     private func setupAddButton() {
-        addButton.addTarget(self, action: #selector(addButtonTapped), for: .touchUpInside)
         view.addSubview(addButton)
-        addButton.clipsToBounds = true
-        addButton.layer.cornerRadius = Self.addButtonDimension/2
         addButton.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             addButton.bottomAnchor.constraint(
@@ -121,26 +114,30 @@ class TodoListViewController: UIViewController {
             addButton.widthAnchor.constraint(equalToConstant: Self.addButtonDimension),
             addButton.heightAnchor.constraint(equalToConstant: Self.addButtonDimension)
         ])
+    }
 
-        let configuration = UIImage.SymbolConfiguration(
-            pointSize: Self.addButtonDimension/2,
-            weight: .regular,
-            scale: .medium)
-        addButton.setImage(UIImage(systemName: "plus", withConfiguration: configuration), for: .normal)
-        addButton.backgroundColor = UIColor.colorFromRGB(rgbValue: 0x6499E9)
-        addButton.tintColor = .white
+    private func setupUserInputContainerView() {
+        view.addSubview(userInputContainerView)
+        userInputContainerView.translatesAutoresizingMaskIntoConstraints = false
+        let userInputContainerViewBottomConstraint = userInputContainerView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        NSLayoutConstraint.activate([
+            userInputContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            userInputContainerViewBottomConstraint,
+            userInputContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+        self.userInputContainerViewBottomConstraint = userInputContainerViewBottomConstraint
     }
 
     // MARK: - Action handler
 
     @objc private func addButtonTapped() {
         userInputContainerView.isHidden = false
-        inputTextView.becomeFirstResponder()
+        userInputContainerView.inputTextView.becomeFirstResponder()
         view.addGestureRecognizer(hideKeyboardTapGesture)
     }
 
     @objc private func keyboardWillShow(notification: Notification) {
-        if !isKeyboardVisible, inputTextView.isFirstResponder,
+        if !isKeyboardVisible, userInputContainerView.inputTextView.isFirstResponder,
             let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
             userInputContainerViewBottomConstraint?.constant -= keyboardSize.height
         }
@@ -154,7 +151,8 @@ class TodoListViewController: UIViewController {
     }
 
     @objc private func hideKeyboard() {
-        inputTextView.resignFirstResponder()
+        userInputContainerView.inputTextView.resignFirstResponder()
+        userInputContainerView.resetInputView()
         view.removeGestureRecognizer(hideKeyboardTapGesture)
     }
 
