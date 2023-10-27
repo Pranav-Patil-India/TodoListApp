@@ -11,8 +11,8 @@ class TodoListViewController: UIViewController {
 
     // MARK: - Constants
 
-     private static let addButtonDimension = 60.0
-     private static let addButtonPadding = 20.0
+    private static let addButtonDimension = 60.0
+    private static let addButtonPadding = 20.0
 
     // MARK: - Private properties
 

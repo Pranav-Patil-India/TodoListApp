@@ -52,6 +52,7 @@ class TodoListUserInputContainerView: UIView {
     }()
 
     // MARK: - Inits
+
     init() {
         super.init(frame: .zero)
         backgroundColor = UIColor.colorFromRGB(rgbValue: 0xF5F7F8)
@@ -61,7 +62,6 @@ class TodoListUserInputContainerView: UIView {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
 
     // MARK: - Public helper
 
