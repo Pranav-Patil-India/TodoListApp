@@ -138,7 +138,7 @@ class TodoListViewController: UIViewController {
 
     @objc private func keyboardWillShow(notification: Notification) {
         if !isKeyboardVisible, userInputContainerView.inputTextView.isFirstResponder,
-            let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
+           let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
             userInputContainerViewBottomConstraint?.constant -= keyboardSize.height
         }
         isKeyboardVisible = true

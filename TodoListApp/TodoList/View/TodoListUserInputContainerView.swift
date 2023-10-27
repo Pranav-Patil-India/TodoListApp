@@ -13,10 +13,10 @@ class TodoListUserInputContainerView: UIView {
 
     private static let inputViewHorizontalPadding = 12.0
     private static let inputTextViewTextContainerInset = UIEdgeInsets(
-       top: 12.0,
-       left: inputViewHorizontalPadding,
-       bottom: -12.0,
-       right: inputViewHorizontalPadding)
+        top: 12.0,
+        left: inputViewHorizontalPadding,
+        bottom: -12.0,
+        right: inputViewHorizontalPadding)
     private static let inputTextViewTextHeight = 18.0
 
     // MARK: - Private properties
