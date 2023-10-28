@@ -46,7 +46,7 @@ class TodoListUserInputContainerView: UIView {
         saveButton.setImage(UIImage(systemName: "plus", withConfiguration: configuration), for: .normal)
         saveButton.clipsToBounds = true
         saveButton.layer.cornerRadius = 30/2
-        saveButton.addTarget(self, action: #selector(addButtonTapped), for: .touchUpInside)
+        saveButton.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
         return saveButton
     }()
 
@@ -125,7 +125,7 @@ class TodoListUserInputContainerView: UIView {
         ])
     }
 
-    @objc private func addButtonTapped() {
+    @objc private func saveButtonTapped() {
         if let inputText = inputTextView.text, !inputText.isEmpty {
             delegate?.saveButtonTapped(inputText: inputText)
         }
