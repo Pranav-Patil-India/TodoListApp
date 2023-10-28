@@ -171,6 +171,9 @@ extension TodoListViewController: UITableViewDelegate, UITableViewDataSource {
         let cell = UITableViewCell()
         cell.selectionStyle = .none
         cell.textLabel?.text = todoListData[indexPath.row].title
+        let isCompleted = todoListData[indexPath.row].isCompleted
+        cell.accessoryType = isCompleted ? .checkmark : .none
+        cell.contentView.alpha = isCompleted ? 0.5 : 1
         return cell
     }
 
@@ -186,7 +189,7 @@ extension TodoListViewController: UITableViewDelegate, UITableViewDataSource {
         LocalDataService.updateData(with: todoListData)
 
         cell.accessoryType = shouldMarkAsCompleted ? .checkmark : .none
-        cell.alpha = shouldMarkAsCompleted ? 0.5 : 1
+        cell.contentView.alpha = shouldMarkAsCompleted ? 0.5 : 1
     }
 
 }
