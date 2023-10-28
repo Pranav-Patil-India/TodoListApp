@@ -28,6 +28,7 @@ class TodoListViewController: UIViewController {
     private lazy var tableView: UITableView = {
         let tableView = UITableView()
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "TodoListCell")
+        tableView.keyboardDismissMode = .interactive
         tableView.dataSource = self
         tableView.delegate = self
         return tableView
@@ -49,7 +50,7 @@ class TodoListViewController: UIViewController {
     }()
 
     private lazy var userInputContainerView: TodoListUserInputContainerView = {
-        let containerView = TodoListUserInputContainerView()
+        let containerView = TodoListUserInputContainerView(delegate: self)
         containerView.isHidden = true
         return containerView
     }()
@@ -170,6 +171,9 @@ extension TodoListViewController: UITableViewDelegate, UITableViewDataSource {
         let cell = UITableViewCell()
         cell.selectionStyle = .none
         cell.textLabel?.text = todoListData[indexPath.row].title
+        let isCompleted = todoListData[indexPath.row].isCompleted
+        cell.accessoryType = isCompleted ? .checkmark : .none
+        cell.contentView.alpha = isCompleted ? 0.5 : 1
         return cell
     }
 
@@ -185,7 +189,21 @@ extension TodoListViewController: UITableViewDelegate, UITableViewDataSource {
         LocalDataService.updateData(with: todoListData)
 
         cell.accessoryType = shouldMarkAsCompleted ? .checkmark : .none
-        cell.alpha = shouldMarkAsCompleted ? 0.5 : 1
+        cell.contentView.alpha = shouldMarkAsCompleted ? 0.5 : 1
+    }
+
+}
+
+// MARK: - TodoListUserInputContainerViewDelegate
+
+extension TodoListViewController: TodoListUserInputContainerViewDelegate {
+
+    func saveButtonTapped(inputText: String) {
+        let newItem = TodoListModel(title: inputText, isCompleted: false)
+        todoListData.append(newItem)
+        LocalDataService.updateData(with: todoListData)
+        hideKeyboard()
+        tableView.reloadData()
     }
 
 }

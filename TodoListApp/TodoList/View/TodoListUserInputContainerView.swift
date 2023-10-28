@@ -7,6 +7,12 @@
 
 import UIKit
 
+protocol TodoListUserInputContainerViewDelegate: NSObjectProtocol {
+
+    func saveButtonTapped(inputText: String)
+
+}
+
 class TodoListUserInputContainerView: UIView {
 
     // MARK: - Constants
@@ -20,6 +26,8 @@ class TodoListUserInputContainerView: UIView {
     private static let inputTextViewTextHeight = 18.0
 
     // MARK: - Private properties
+
+    private weak var delegate: TodoListUserInputContainerViewDelegate?
 
     private lazy var placeholderLabel: UILabel = {
         let label = UILabel()
@@ -38,12 +46,13 @@ class TodoListUserInputContainerView: UIView {
         saveButton.setImage(UIImage(systemName: "plus", withConfiguration: configuration), for: .normal)
         saveButton.clipsToBounds = true
         saveButton.layer.cornerRadius = 30/2
-        saveButton.addTarget(self, action: #selector(addButtonTapped), for: .touchUpInside)
+        saveButton.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
         return saveButton
     }()
 
     lazy var inputTextView: UITextView = {
         let textview = UITextView()
+        textview.isScrollEnabled = false
         textview.font = UIFont.systemFont(ofSize: Self.inputTextViewTextHeight)
         textview.textContainerInset = Self.inputTextViewTextContainerInset
         textview.backgroundColor = .clear
@@ -53,7 +62,8 @@ class TodoListUserInputContainerView: UIView {
 
     // MARK: - Inits
 
-    init() {
+    init(delegate: TodoListUserInputContainerViewDelegate?) {
+        self.delegate = delegate
         super.init(frame: .zero)
         backgroundColor = UIColor.colorFromRGB(rgbValue: 0xF5F7F8)
         setupUserInputContainerView()
@@ -115,7 +125,11 @@ class TodoListUserInputContainerView: UIView {
         ])
     }
 
-    @objc private func addButtonTapped() {}
+    @objc private func saveButtonTapped() {
+        if let inputText = inputTextView.text, !inputText.isEmpty {
+            delegate?.saveButtonTapped(inputText: inputText)
+        }
+    }
 
 }
 
