@@ -47,6 +47,7 @@ class TodoListUserInputContainerView: UIView {
         saveButton.clipsToBounds = true
         saveButton.layer.cornerRadius = 30/2
         saveButton.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
+        saveButton.isEnabled = false
         return saveButton
     }()
 
@@ -126,8 +127,9 @@ class TodoListUserInputContainerView: UIView {
     }
 
     @objc private func saveButtonTapped() {
-        if let inputText = inputTextView.text, !inputText.isEmpty {
+        if let inputText = inputTextView.text, !inputText.replacingOccurrences(of: " ", with: "").isEmpty {
             delegate?.saveButtonTapped(inputText: inputText)
+            saveButton.isEnabled = false
         }
     }
 
@@ -138,6 +140,7 @@ class TodoListUserInputContainerView: UIView {
 extension TodoListUserInputContainerView: UITextViewDelegate {
 
     func textViewDidChange(_ textView: UITextView) {
+        saveButton.isEnabled = !textView.text.replacingOccurrences(of: " ", with: "").isEmpty
         placeholderLabel.isHidden = !textView.text.isEmpty
     }
 
