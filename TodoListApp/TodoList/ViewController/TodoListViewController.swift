@@ -5,6 +5,7 @@
 //  Created by Pranav Patil on 23/10/23.
 //
 
+import CoreData
 import UIKit
 
 class TodoListViewController: UIViewController {
@@ -16,7 +17,7 @@ class TodoListViewController: UIViewController {
 
     // MARK: - Private properties
 
-    private var todoListData = [TodoListModel]()
+    private var todoListData = [TodoListItemModel]()
     private var isKeyboardVisible = false
     private var userInputContainerViewBottomConstraint: NSLayoutConstraint?
     private lazy var hideKeyboardTapGesture = UITapGestureRecognizer(
@@ -59,7 +60,7 @@ class TodoListViewController: UIViewController {
 
     init() {
         super.init(nibName: nil, bundle: nil)
-        todoListData = LocalDataService.fetchDataFromDatabase()
+        todoListData = LocalDataService.fetchData()
         setupTableView()
         setupAddButton()
         setupUserInputContainerView()
@@ -186,7 +187,7 @@ extension TodoListViewController: UITableViewDelegate, UITableViewDataSource {
         // If item is not "checked", we should mark it "completed".
         let shouldMarkAsCompleted = cell.accessoryType == .none
         todoListData[indexPath.row].isCompleted = shouldMarkAsCompleted
-        LocalDataService.updateData(with: todoListData)
+        LocalDataService.saveContextData()
 
         cell.accessoryType = shouldMarkAsCompleted ? .checkmark : .none
         cell.contentView.alpha = shouldMarkAsCompleted ? 0.5 : 1
@@ -199,9 +200,9 @@ extension TodoListViewController: UITableViewDelegate, UITableViewDataSource {
 extension TodoListViewController: TodoListUserInputContainerViewDelegate {
 
     func saveButtonTapped(inputText: String) {
-        let newItem = TodoListModel(title: inputText, isCompleted: false)
+        let newItem = LocalDataService.createTodoListItemModel(title: inputText)
         todoListData.append(newItem)
-        LocalDataService.updateData(with: todoListData)
+        LocalDataService.saveContextData()
         hideKeyboard()
         tableView.reloadData()
     }
