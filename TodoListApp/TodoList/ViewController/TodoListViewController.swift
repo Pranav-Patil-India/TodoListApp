@@ -8,12 +8,7 @@
 import CoreData
 import UIKit
 
-class TodoListViewController: UIViewController {
-
-    // MARK: - Constants
-
-    private static let addButtonDimension = 60.0
-    private static let addButtonPadding = 20.0
+class TodoListViewController: BaseViewController {
 
     // MARK: - Private properties
 
@@ -24,32 +19,6 @@ class TodoListViewController: UIViewController {
         target: self,
         action: #selector(hideKeyboard))
 
-    // MARK: - Subviews
-
-    private lazy var tableView: UITableView = {
-        let tableView = UITableView()
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "TodoListCell")
-        tableView.keyboardDismissMode = .interactive
-        tableView.dataSource = self
-        tableView.delegate = self
-        return tableView
-    }()
-
-    private lazy var addButton: UIButton = {
-        let addButton = UIButton()
-        let configuration = UIImage.SymbolConfiguration(
-            pointSize: Self.addButtonDimension/2,
-            weight: .regular,
-            scale: .medium)
-        addButton.setImage(UIImage(systemName: "plus", withConfiguration: configuration), for: .normal)
-        addButton.backgroundColor = UIColor.colorFromRGB(rgbValue: 0x6499E9)
-        addButton.tintColor = .white
-        addButton.clipsToBounds = true
-        addButton.layer.cornerRadius = Self.addButtonDimension/2
-        addButton.addTarget(self, action: #selector(addButtonTapped), for: .touchUpInside)
-        return addButton
-    }()
-
     private lazy var userInputContainerView: TodoListUserInputContainerView = {
         let containerView = TodoListUserInputContainerView(delegate: self)
         containerView.isHidden = true
@@ -58,12 +27,14 @@ class TodoListViewController: UIViewController {
 
     // MARK: - Inits
 
-    init() {
-        super.init(nibName: nil, bundle: nil)
+    override init() {
+        super.init()
         todoListData = LocalDataService.fetchData()
-        setupTableView()
-        setupAddButton()
         setupUserInputContainerView()
+
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "TodoListCell")
+        tableView.dataSource = self
+        tableView.delegate = self
 
         navigationItem.title = "TODOs"
     }
@@ -90,33 +61,13 @@ class TodoListViewController: UIViewController {
             object: nil)
     }
 
+    override func addButtonTapped() {
+        userInputContainerView.isHidden = false
+        userInputContainerView.inputTextView.becomeFirstResponder()
+        view.addGestureRecognizer(hideKeyboardTapGesture)
+    }
+
     // MARK: - Private methods
-
-    private func setupTableView() {
-        view.addSubview(tableView)
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.topAnchor),
-            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-        ])
-    }
-
-    private func setupAddButton() {
-        view.addSubview(addButton)
-        addButton.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            addButton.bottomAnchor.constraint(
-                equalTo: view.safeAreaLayoutGuide.bottomAnchor,
-                constant: -Self.addButtonPadding),
-            addButton.trailingAnchor.constraint(
-                equalTo: view.safeAreaLayoutGuide.trailingAnchor,
-                constant: -Self.addButtonPadding),
-            addButton.widthAnchor.constraint(equalToConstant: Self.addButtonDimension),
-            addButton.heightAnchor.constraint(equalToConstant: Self.addButtonDimension)
-        ])
-    }
 
     private func setupUserInputContainerView() {
         view.addSubview(userInputContainerView)
@@ -131,12 +82,6 @@ class TodoListViewController: UIViewController {
     }
 
     // MARK: - Action handler
-
-    @objc private func addButtonTapped() {
-        userInputContainerView.isHidden = false
-        userInputContainerView.inputTextView.becomeFirstResponder()
-        view.addGestureRecognizer(hideKeyboardTapGesture)
-    }
 
     @objc private func keyboardWillShow(notification: Notification) {
         if !isKeyboardVisible, userInputContainerView.inputTextView.isFirstResponder,
