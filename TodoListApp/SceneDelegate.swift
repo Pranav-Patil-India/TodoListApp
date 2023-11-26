@@ -24,7 +24,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
 
         /// 3. Create a view hierarchy programmatically
-        let navigation = UINavigationController(rootViewController: TodoListViewController())
+        let navigation = UINavigationController(rootViewController: CategoryListViewController())
 
         /// 4. Set the root view controller of the window with your view controller
         window.rootViewController = navigation

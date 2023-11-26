@@ -10,6 +10,10 @@ import UIKit
 
 class LocalDataService {
 
+    // Dummy data
+
+    static let dummyStrings = ["Test1", "Test2", "Test3"]
+
     // MARK: - Constants
 
     private static let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
