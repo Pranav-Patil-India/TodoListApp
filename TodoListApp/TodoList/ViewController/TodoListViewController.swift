@@ -25,11 +25,13 @@ class TodoListViewController: BaseViewController {
         return containerView
     }()
 
+    private var category: CategoryListItemModel?
+
     // MARK: - Inits
 
-    override init() {
+    init(category: CategoryListItemModel) {
         super.init()
-        todoListData = LocalDataService.fetchData()
+
         setupUserInputContainerView()
 
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "TodoListCell")
@@ -37,6 +39,9 @@ class TodoListViewController: BaseViewController {
         tableView.delegate = self
 
         navigationItem.title = "TODOs"
+
+        self.category = category
+        todoListData = LocalDataService.fetchTodoListData(category: category)
     }
 
     required init?(coder: NSCoder) {
@@ -132,6 +137,7 @@ extension TodoListViewController: UITableViewDelegate, UITableViewDataSource {
         // If item is not "checked", we should mark it "completed".
         let shouldMarkAsCompleted = cell.accessoryType == .none
         todoListData[indexPath.row].isCompleted = shouldMarkAsCompleted
+        todoListData[indexPath.row].parentCategory = category
         LocalDataService.saveContextData()
 
         cell.accessoryType = shouldMarkAsCompleted ? .checkmark : .none
@@ -145,7 +151,10 @@ extension TodoListViewController: UITableViewDelegate, UITableViewDataSource {
 extension TodoListViewController: TodoListUserInputContainerViewDelegate {
 
     func saveButtonTapped(inputText: String) {
-        let newItem = LocalDataService.createTodoListItemModel(title: inputText)
+        guard let category = category else {
+            return
+        }
+        let newItem = LocalDataService.createTodoListItemModel(title: inputText, category: category)
         todoListData.append(newItem)
         LocalDataService.saveContextData()
         hideKeyboard()

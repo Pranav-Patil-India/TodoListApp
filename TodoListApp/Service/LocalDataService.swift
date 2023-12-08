@@ -10,22 +10,11 @@ import UIKit
 
 class LocalDataService {
 
-    // Dummy data
-
-    static let dummyStrings = ["Test1", "Test2", "Test3"]
-
     // MARK: - Constants
 
     private static let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
 
     // MARK: - Public helpers
-
-    static func createTodoListItemModel(title: String, isCompleted: Bool = false) -> TodoListItemModel {
-        let todoListItemModel = TodoListItemModel(context: context)
-        todoListItemModel.title = title
-        todoListItemModel.isCompleted = isCompleted
-        return todoListItemModel
-    }
 
     static func saveContextData() {
         do {
@@ -35,12 +24,46 @@ class LocalDataService {
         }
     }
 
-    static func fetchData() -> [TodoListItemModel] {
-        let request: NSFetchRequest<TodoListItemModel> = TodoListItemModel.fetchRequest()
+    // MARK: - Category list
+
+    static func createCategoryListItemModel(name: String) -> CategoryListItemModel {
+        let categoryListItemModel = CategoryListItemModel(context: context)
+        categoryListItemModel.name = name
+        return categoryListItemModel
+    }
+
+    static func fetchCategoryData() -> [CategoryListItemModel] {
+        let request: NSFetchRequest<CategoryListItemModel> = CategoryListItemModel.fetchRequest()
         do {
             return  try context.fetch(request)
         } catch {
-            print("Error fetching data, error = \(error)")
+            print("Error fetching CategoryListItemModel data, error = \(error)")
+            return []
+        }
+    }
+
+    // MARK: - TODO list
+
+    static func createTodoListItemModel(title: String,
+                                        isCompleted: Bool = false,
+                                        category: CategoryListItemModel) -> TodoListItemModel {
+        let todoListItemModel = TodoListItemModel(context: context)
+        todoListItemModel.title = title
+        todoListItemModel.parentCategory = category
+        todoListItemModel.isCompleted = isCompleted
+        return todoListItemModel
+    }
+
+    static func fetchTodoListData(category: CategoryListItemModel?) -> [TodoListItemModel] {
+        guard let categoryName = category?.name else {
+            return []
+        }
+        let request: NSFetchRequest<TodoListItemModel> = TodoListItemModel.fetchRequest()
+        request.predicate = NSPredicate(format: "parentCategory.name MATCHES %@", categoryName)
+        do {
+            return  try context.fetch(request)
+        } catch {
+            print("Error fetching TodoListItemModel data, error = \(error)")
             return []
         }
     }
