@@ -12,6 +12,7 @@ class TodoListViewController: BaseViewController {
 
     // MARK: - Private properties
 
+    private var category: CategoryListItemModel?
     private var todoListData = [TodoListItemModel]()
     private var isKeyboardVisible = false
     private var userInputContainerViewBottomConstraint: NSLayoutConstraint?
@@ -27,16 +28,19 @@ class TodoListViewController: BaseViewController {
 
     // MARK: - Inits
 
-    override init() {
+    init(category: CategoryListItemModel) {
         super.init()
-        todoListData = LocalDataService.fetchData()
+
         setupUserInputContainerView()
 
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "TodoListCell")
         tableView.dataSource = self
         tableView.delegate = self
 
-        navigationItem.title = "TODOs"
+        navigationItem.title = category.name
+
+        self.category = category
+        todoListData = LocalDataService.fetchTodoListData(category: category)
     }
 
     required init?(coder: NSCoder) {
@@ -132,6 +136,7 @@ extension TodoListViewController: UITableViewDelegate, UITableViewDataSource {
         // If item is not "checked", we should mark it "completed".
         let shouldMarkAsCompleted = cell.accessoryType == .none
         todoListData[indexPath.row].isCompleted = shouldMarkAsCompleted
+        todoListData[indexPath.row].parentCategory = category
         LocalDataService.saveContextData()
 
         cell.accessoryType = shouldMarkAsCompleted ? .checkmark : .none
@@ -145,7 +150,11 @@ extension TodoListViewController: UITableViewDelegate, UITableViewDataSource {
 extension TodoListViewController: TodoListUserInputContainerViewDelegate {
 
     func saveButtonTapped(inputText: String) {
-        let newItem = LocalDataService.createTodoListItemModel(title: inputText)
+        guard let category = category else {
+            assertionFailure("Category cannot be nil")
+            return
+        }
+        let newItem = LocalDataService.createTodoListItemModel(title: inputText, category: category)
         todoListData.append(newItem)
         LocalDataService.saveContextData()
         hideKeyboard()
