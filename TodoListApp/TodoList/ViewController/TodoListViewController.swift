@@ -12,6 +12,7 @@ class TodoListViewController: BaseViewController {
 
     // MARK: - Private properties
 
+    private var category: CategoryListItemModel?
     private var todoListData = [TodoListItemModel]()
     private var isKeyboardVisible = false
     private var userInputContainerViewBottomConstraint: NSLayoutConstraint?
@@ -25,8 +26,6 @@ class TodoListViewController: BaseViewController {
         return containerView
     }()
 
-    private var category: CategoryListItemModel?
-
     // MARK: - Inits
 
     init(category: CategoryListItemModel) {
@@ -38,7 +37,7 @@ class TodoListViewController: BaseViewController {
         tableView.dataSource = self
         tableView.delegate = self
 
-        navigationItem.title = "TODOs"
+        navigationItem.title = category.name
 
         self.category = category
         todoListData = LocalDataService.fetchTodoListData(category: category)
@@ -152,6 +151,7 @@ extension TodoListViewController: TodoListUserInputContainerViewDelegate {
 
     func saveButtonTapped(inputText: String) {
         guard let category = category else {
+            assertionFailure("Category cannot be nil")
             return
         }
         let newItem = LocalDataService.createTodoListItemModel(title: inputText, category: category)

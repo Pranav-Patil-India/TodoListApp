@@ -51,7 +51,7 @@ class CategoryListViewController: BaseViewController {
         }))
 
         // Show the alert
-        self.present(alert, animated: true, completion: nil)
+        present(alert, animated: true, completion: nil)
     }
 
 }

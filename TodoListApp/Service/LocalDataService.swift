@@ -35,7 +35,7 @@ class LocalDataService {
     static func fetchCategoryData() -> [CategoryListItemModel] {
         let request: NSFetchRequest<CategoryListItemModel> = CategoryListItemModel.fetchRequest()
         do {
-            return  try context.fetch(request)
+            return try context.fetch(request)
         } catch {
             print("Error fetching CategoryListItemModel data, error = \(error)")
             return []
@@ -56,12 +56,13 @@ class LocalDataService {
 
     static func fetchTodoListData(category: CategoryListItemModel?) -> [TodoListItemModel] {
         guard let categoryName = category?.name else {
+            assertionFailure("Category name cannot be nil")
             return []
         }
         let request: NSFetchRequest<TodoListItemModel> = TodoListItemModel.fetchRequest()
         request.predicate = NSPredicate(format: "parentCategory.name MATCHES %@", categoryName)
         do {
-            return  try context.fetch(request)
+            return try context.fetch(request)
         } catch {
             print("Error fetching TodoListItemModel data, error = \(error)")
             return []
