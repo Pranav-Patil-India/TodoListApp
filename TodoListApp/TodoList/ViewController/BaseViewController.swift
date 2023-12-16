@@ -42,14 +42,6 @@ class BaseViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    // MARK: - Overriden methods
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        view.backgroundColor = .yellow
-    }
-
     // MARK: - Private methods
 
     private func setupTableView() {

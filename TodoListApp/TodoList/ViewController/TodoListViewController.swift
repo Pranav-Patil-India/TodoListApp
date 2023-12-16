@@ -36,6 +36,7 @@ class TodoListViewController: BaseViewController {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "TodoListCell")
         tableView.dataSource = self
         tableView.delegate = self
+        tableView.separatorStyle = .none
 
         navigationItem.title = category.name
 
@@ -122,8 +123,8 @@ extension TodoListViewController: UITableViewDelegate, UITableViewDataSource {
         cell.selectionStyle = .none
         cell.textLabel?.text = todoListData[indexPath.row].title
         let isCompleted = todoListData[indexPath.row].isCompleted
-        cell.accessoryType = isCompleted ? .checkmark : .none
-        cell.contentView.alpha = isCompleted ? 0.5 : 1
+        cell.imageView?.image = isCompleted ? UIImage(systemName: "checkmark.circle.fill") : UIImage(systemName: "circle")
+        cell.textLabel?.alpha = isCompleted ? 0.5 : 1
         return cell
     }
 
@@ -133,14 +134,15 @@ extension TodoListViewController: UITableViewDelegate, UITableViewDataSource {
             return
         }
 
-        // If item is not "checked", we should mark it "completed".
-        let shouldMarkAsCompleted = cell.accessoryType == .none
+        let shouldMarkAsCompleted = !todoListData[indexPath.row].isCompleted
         todoListData[indexPath.row].isCompleted = shouldMarkAsCompleted
         todoListData[indexPath.row].parentCategory = category
         LocalDataService.saveContextData()
 
-        cell.accessoryType = shouldMarkAsCompleted ? .checkmark : .none
-        cell.contentView.alpha = shouldMarkAsCompleted ? 0.5 : 1
+        cell.imageView?.image = shouldMarkAsCompleted
+        ? UIImage(systemName: "checkmark.circle.fill")
+        : UIImage(systemName: "circle")
+        cell.textLabel?.alpha = shouldMarkAsCompleted ? 0.5 : 1
     }
 
 }
