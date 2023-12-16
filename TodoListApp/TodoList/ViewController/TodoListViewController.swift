@@ -15,6 +15,7 @@ class TodoListViewController: BaseViewController {
     private var category: CategoryListItemModel?
     private var todoListData = [TodoListItemModel]()
     private var isKeyboardVisible = false
+    private var isBulkDeleteEnabled = false
     private var userInputContainerViewBottomConstraint: NSLayoutConstraint?
     private lazy var hideKeyboardTapGesture = UITapGestureRecognizer(
         target: self,
@@ -42,6 +43,9 @@ class TodoListViewController: BaseViewController {
 
         self.category = category
         todoListData = LocalDataService.fetchTodoListData(category: category)
+
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(sender:)))
+        tableView.addGestureRecognizer(longPress)
     }
 
     required init?(coder: NSCoder) {
@@ -108,6 +112,15 @@ class TodoListViewController: BaseViewController {
         view.removeGestureRecognizer(hideKeyboardTapGesture)
     }
 
+    @objc private func handleLongPress(sender: UILongPressGestureRecognizer) {
+        if sender.state == .began {
+            let touchPoint = sender.location(in: tableView)
+            if let indexPath = tableView.indexPathForRow(at: touchPoint) {
+                // your code here, get the row for the indexPath or do whatever you want
+            }
+        }
+    }
+
 }
 
 // MARK: - UITableViewDelegate, UITableViewDataSource
@@ -143,6 +156,25 @@ extension TodoListViewController: UITableViewDelegate, UITableViewDataSource {
         ? UIImage(systemName: "checkmark.circle.fill")
         : UIImage(systemName: "circle")
         cell.textLabel?.alpha = shouldMarkAsCompleted ? 0.5 : 1
+    }
+
+    func tableView(_ tableView: UITableView,
+                   trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteItem = UIContextualAction(style: .destructive, title:  "Delete", handler: { [weak self] (
+            ac:UIContextualAction,
+            view:UIView,
+            success:(Bool) -> Void) in
+            guard let weakSelf = self else {
+                assertionFailure("Self should not be nil")
+                return
+            }
+            LocalDataService.deleteItem(item: weakSelf.todoListData[indexPath.row])
+            weakSelf.todoListData.remove(at: indexPath.row)
+            LocalDataService.saveContextData()
+            weakSelf.tableView.deleteRows(at: [indexPath], with: .fade)
+        })
+        deleteItem.image = UIImage(systemName: "trash.fill")
+        return UISwipeActionsConfiguration(actions: [deleteItem])
     }
 
 }

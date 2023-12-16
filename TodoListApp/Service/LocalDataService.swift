@@ -69,4 +69,8 @@ class LocalDataService {
         }
     }
 
+    static func deleteItem(item: TodoListItemModel) {
+        context.delete(item)
+    }
+
 }
