@@ -14,7 +14,6 @@ class TodoListViewController: BaseViewController {
 
     private var category: CategoryListItemModel?
     private var todoListData = [TodoListItemViewData]()
-    private var todoListModel = [TodoListItemModel]()
     private var isKeyboardVisible = false
     private var userInputContainerViewBottomConstraint: NSLayoutConstraint?
     private lazy var hideKeyboardTapGesture = UITapGestureRecognizer(
@@ -26,6 +25,8 @@ class TodoListViewController: BaseViewController {
         containerView.isHidden = true
         return containerView
     }()
+
+    private lazy var localDataHandler = LocalDataHandler()
 
     // MARK: - Inits
 
@@ -42,10 +43,7 @@ class TodoListViewController: BaseViewController {
         navigationItem.title = category.name
 
         self.category = category
-        todoListModel = LocalDataService.fetchTodoListData(category: category)
-        todoListData = todoListModel.map({ model in
-            return TodoListItemViewData.getTodoListItemViewData(from: model)
-        })
+        todoListData = localDataHandler.fetchTodoListData(category: category)
     }
 
     required init?(coder: NSCoder) {
@@ -56,6 +54,8 @@ class TodoListViewController: BaseViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        print("####### path = \(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))")
 
         // Keyboard observer
         NotificationCenter.default.addObserver(
@@ -76,13 +76,20 @@ class TodoListViewController: BaseViewController {
         view.addGestureRecognizer(hideKeyboardTapGesture)
     }
 
-    override func exitBulkDelete(sender: UIBarButtonItem) {
-        super.exitBulkDelete(sender: sender)
+    override func exitBulkDelete() {
+        super.exitBulkDelete()
         navigationItem.title = category?.name
         todoListData = todoListData.map({ data in
             data.shouldDelete = false
             return data
         })
+    }
+
+    override func deleteSelectedItems() {
+        let itemsToDelete = todoListData.filter { $0.shouldDelete }
+        todoListData.removeAll { $0.shouldDelete }
+        localDataHandler.deleteTodoListItems(viewDatas: itemsToDelete)
+        exitBulkDelete()
     }
 
     // MARK: - Private methods
@@ -156,19 +163,16 @@ extension TodoListViewController: UITableViewDelegate, UITableViewDataSource {
         }
 
         if isBulkDeleteEnabled {
-            todoListData[indexPath.row].shouldDelete = isBulkDeleteEnabled && !todoListData[indexPath.row].shouldDelete
-            cell.imageView?.image = getCheckboxImage(shouldDelete: todoListData[indexPath.row].shouldDelete)
+            let viewData = todoListData[indexPath.row]
+            viewData.shouldDelete = !viewData.shouldDelete
+            cell.imageView?.image = getCheckboxImage(shouldDelete: viewData.shouldDelete)
             return
         }
 
-        let shouldMarkAsCompleted = !todoListModel[indexPath.row].isCompleted
-        todoListModel[indexPath.row].isCompleted = shouldMarkAsCompleted
-        todoListModel[indexPath.row].parentCategory = category
-        LocalDataService.saveContextData()
-
-        todoListData = todoListModel.map({
-            TodoListItemViewData.getTodoListItemViewData(from: $0)
-        })
+        let viewData = todoListData[indexPath.row]
+        let shouldMarkAsCompleted = !viewData.isCompleted
+        viewData.isCompleted = shouldMarkAsCompleted
+        localDataHandler.updateTodoListItem(viewData: viewData)
 
         cell.imageView?.image = getCheckboxImage(isTaskCompleted: shouldMarkAsCompleted)
         cell.textLabel?.alpha = shouldMarkAsCompleted ? 0.5 : 1
@@ -184,10 +188,9 @@ extension TodoListViewController: UITableViewDelegate, UITableViewDataSource {
                 assertionFailure("Self should not be nil")
                 return
             }
-            LocalDataService.deleteItems(items: [weakSelf.todoListModel[indexPath.row]])
-            weakSelf.todoListModel.remove(at: indexPath.row)
+            let viewData = weakSelf.todoListData[indexPath.row]
+            weakSelf.localDataHandler.deleteTodoListItems(viewDatas: [viewData])
             weakSelf.todoListData.remove(at: indexPath.row)
-            LocalDataService.saveContextData()
             weakSelf.tableView.deleteRows(at: [indexPath], with: .fade)
         })
         deleteItem.image = UIImage(systemName: "trash.fill")
@@ -205,14 +208,12 @@ extension TodoListViewController: TodoListUserInputContainerViewDelegate {
             assertionFailure("Category cannot be nil")
             return
         }
-        let newItem = LocalDataService.createTodoListItemModel(title: inputText, category: category)
-        todoListModel.append(newItem)
-        LocalDataService.saveContextData()
-        todoListData = todoListModel.map({
-            TodoListItemViewData.getTodoListItemViewData(from: $0)
-        })
+        let viewDataItem = TodoListItemViewData(isCompleted: false, title: inputText, parentCategory: category)
+        if localDataHandler.saveTodoListItem(viewData: viewDataItem) {
+            todoListData.append(viewDataItem)
+            tableView.reloadData()
+        }
         hideKeyboard()
-        tableView.reloadData()
     }
 
 }

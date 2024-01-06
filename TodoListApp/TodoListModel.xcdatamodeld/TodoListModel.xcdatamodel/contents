@@ -2,7 +2,7 @@
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="21754" systemVersion="22E261" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="CategoryListItemModel" representedClassName=".CategoryListItemModel" syncable="YES" codeGenerationType="class">
         <attribute name="name" attributeType="String"/>
-        <relationship name="items" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TodoListItemModel" inverseName="parentCategory" inverseEntity="TodoListItemModel"/>
+        <relationship name="items" toMany="YES" deletionRule="Nullify" destinationEntity="TodoListItemModel" inverseName="parentCategory" inverseEntity="TodoListItemModel"/>
     </entity>
     <entity name="TodoListItemModel" representedClassName=".TodoListItemModel" syncable="YES" codeGenerationType="class">
         <attribute name="isCompleted" attributeType="Boolean" usesScalarValueType="YES"/>

@@ -138,7 +138,7 @@ class BaseViewController: UIViewController {
             image: UIImage(systemName: "xmark"),
             style: .plain,
             target: self,
-            action: #selector(exitBulkDelete(sender:)))
+            action: #selector(exitBulkDelete))
         addButton.isHidden = true
         tableView.reloadData()
     }
@@ -149,7 +149,7 @@ class BaseViewController: UIViewController {
         assertionFailure("Subclass should implement addButtonTapped().")
     }
 
-    @objc func exitBulkDelete(sender: UIBarButtonItem) {
+    @objc func exitBulkDelete() {
         tableViewBottomWithDeleteContainer?.isActive = false
         tableViewBottomWithViewController?.isActive = true
         deleteButtonContainerView.isHidden = true
@@ -161,20 +161,13 @@ class BaseViewController: UIViewController {
     }
 
     @objc func deleteSelectedItems() {
-        // TODO: TLA-10 - Delete multiple items
+        assertionFailure("Subclass should implement deleteSelectedItems().")
     }
 
     @objc private func handleLongPress(sender: UILongPressGestureRecognizer) {
         // Enable delete bulk action.
         enterBulkActionDeleteMode()
         navigationItem.title = "Select items"
-
-//        if sender.state == .began {
-//            let touchPoint = sender.location(in: tableView)
-//            if let indexPath = tableView.indexPathForRow(at: touchPoint) {
-//
-//            }
-//        }
     }
 
 }
