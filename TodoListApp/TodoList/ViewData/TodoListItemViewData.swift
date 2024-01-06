@@ -21,12 +21,4 @@ class TodoListItemViewData {
         self.shouldDelete = shouldDelete
     }
 
-    static func getTodoListItemViewData(from model: TodoListItemModel, shouldDelete: Bool = false) -> TodoListItemViewData {
-        return TodoListItemViewData(
-            isCompleted: model.isCompleted,
-            title: model.title,
-            parentCategory: model.parentCategory,
-            shouldDelete: shouldDelete)
-    }
-
 }
