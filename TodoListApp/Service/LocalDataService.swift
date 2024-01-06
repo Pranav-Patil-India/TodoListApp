@@ -69,4 +69,8 @@ class LocalDataService {
         }
     }
 
+    static func deleteItems(items: [TodoListItemModel]) {
+        items.forEach { context.delete($0) }
+    }
+
 }

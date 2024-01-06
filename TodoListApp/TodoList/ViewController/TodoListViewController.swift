@@ -13,7 +13,8 @@ class TodoListViewController: BaseViewController {
     // MARK: - Private properties
 
     private var category: CategoryListItemModel?
-    private var todoListData = [TodoListItemModel]()
+    private var todoListData = [TodoListItemViewData]()
+    private var todoListModel = [TodoListItemModel]()
     private var isKeyboardVisible = false
     private var userInputContainerViewBottomConstraint: NSLayoutConstraint?
     private lazy var hideKeyboardTapGesture = UITapGestureRecognizer(
@@ -41,7 +42,10 @@ class TodoListViewController: BaseViewController {
         navigationItem.title = category.name
 
         self.category = category
-        todoListData = LocalDataService.fetchTodoListData(category: category)
+        todoListModel = LocalDataService.fetchTodoListData(category: category)
+        todoListData = todoListModel.map({ model in
+            return TodoListItemViewData.getTodoListItemViewData(from: model)
+        })
     }
 
     required init?(coder: NSCoder) {
@@ -72,6 +76,15 @@ class TodoListViewController: BaseViewController {
         view.addGestureRecognizer(hideKeyboardTapGesture)
     }
 
+    override func exitBulkDelete(sender: UIBarButtonItem) {
+        super.exitBulkDelete(sender: sender)
+        navigationItem.title = category?.name
+        todoListData = todoListData.map({ data in
+            data.shouldDelete = false
+            return data
+        })
+    }
+
     // MARK: - Private methods
 
     private func setupUserInputContainerView() {
@@ -84,6 +97,13 @@ class TodoListViewController: BaseViewController {
             userInputContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
         self.userInputContainerViewBottomConstraint = userInputContainerViewBottomConstraint
+    }
+
+    private func getCheckboxImage(isTaskCompleted: Bool = false, shouldDelete: Bool = false) -> UIImage? {
+        if isBulkDeleteEnabled {
+            return shouldDelete ? UIImage(systemName: "checkmark.square.fill") : UIImage(systemName: "square")
+        }
+        return isTaskCompleted ? UIImage(systemName: "checkmark.circle.fill") : UIImage(systemName: "circle")
     }
 
     // MARK: - Action handler
@@ -121,9 +141,10 @@ extension TodoListViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell()
         cell.selectionStyle = .none
-        cell.textLabel?.text = todoListData[indexPath.row].title
-        let isCompleted = todoListData[indexPath.row].isCompleted
-        cell.imageView?.image = isCompleted ? UIImage(systemName: "checkmark.circle.fill") : UIImage(systemName: "circle")
+        let todoListData = todoListData[indexPath.row]
+        cell.textLabel?.text = todoListData.title
+        let isCompleted = todoListData.isCompleted
+        cell.imageView?.image = getCheckboxImage(isTaskCompleted: isCompleted, shouldDelete: todoListData.shouldDelete)
         cell.textLabel?.alpha = isCompleted ? 0.5 : 1
         return cell
     }
@@ -134,15 +155,43 @@ extension TodoListViewController: UITableViewDelegate, UITableViewDataSource {
             return
         }
 
-        let shouldMarkAsCompleted = !todoListData[indexPath.row].isCompleted
-        todoListData[indexPath.row].isCompleted = shouldMarkAsCompleted
-        todoListData[indexPath.row].parentCategory = category
+        if isBulkDeleteEnabled {
+            todoListData[indexPath.row].shouldDelete = isBulkDeleteEnabled && !todoListData[indexPath.row].shouldDelete
+            cell.imageView?.image = getCheckboxImage(shouldDelete: todoListData[indexPath.row].shouldDelete)
+            return
+        }
+
+        let shouldMarkAsCompleted = !todoListModel[indexPath.row].isCompleted
+        todoListModel[indexPath.row].isCompleted = shouldMarkAsCompleted
+        todoListModel[indexPath.row].parentCategory = category
         LocalDataService.saveContextData()
 
-        cell.imageView?.image = shouldMarkAsCompleted
-        ? UIImage(systemName: "checkmark.circle.fill")
-        : UIImage(systemName: "circle")
+        todoListData = todoListModel.map({
+            TodoListItemViewData.getTodoListItemViewData(from: $0)
+        })
+
+        cell.imageView?.image = getCheckboxImage(isTaskCompleted: shouldMarkAsCompleted)
         cell.textLabel?.alpha = shouldMarkAsCompleted ? 0.5 : 1
+    }
+
+    func tableView(_ tableView: UITableView,
+                   trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteItem = UIContextualAction(style: .destructive, title:  "Delete", handler: { [weak self] (
+            ac:UIContextualAction,
+            view:UIView,
+            success:(Bool) -> Void) in
+            guard let weakSelf = self else {
+                assertionFailure("Self should not be nil")
+                return
+            }
+            LocalDataService.deleteItems(items: [weakSelf.todoListModel[indexPath.row]])
+            weakSelf.todoListModel.remove(at: indexPath.row)
+            weakSelf.todoListData.remove(at: indexPath.row)
+            LocalDataService.saveContextData()
+            weakSelf.tableView.deleteRows(at: [indexPath], with: .fade)
+        })
+        deleteItem.image = UIImage(systemName: "trash.fill")
+        return UISwipeActionsConfiguration(actions: [deleteItem])
     }
 
 }
@@ -157,8 +206,11 @@ extension TodoListViewController: TodoListUserInputContainerViewDelegate {
             return
         }
         let newItem = LocalDataService.createTodoListItemModel(title: inputText, category: category)
-        todoListData.append(newItem)
+        todoListModel.append(newItem)
         LocalDataService.saveContextData()
+        todoListData = todoListModel.map({
+            TodoListItemViewData.getTodoListItemViewData(from: $0)
+        })
         hideKeyboard()
         tableView.reloadData()
     }
