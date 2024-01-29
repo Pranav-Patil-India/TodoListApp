@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		7C0D44672AEE6A170027497D /* TodoListModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 7C0D44652AEE6A170027497D /* TodoListModel.xcdatamodeld */; };
+		7C1001C62B682CAC0066A78F /* TodoListItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1001C52B682CAC0066A78F /* TodoListItemCell.swift */; };
 		7C1E62082AE6B9DF00978667 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1E62072AE6B9DF00978667 /* AppDelegate.swift */; };
 		7C1E620A2AE6B9DF00978667 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1E62092AE6B9DF00978667 /* SceneDelegate.swift */; };
 		7C1E62112AE6B9E000978667 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7C1E62102AE6B9E000978667 /* Assets.xcassets */; };
@@ -27,6 +28,7 @@
 
 /* Begin PBXFileReference section */
 		7C0D44662AEE6A170027497D /* TodoListModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = TodoListModel.xcdatamodel; sourceTree = "<group>"; };
+		7C1001C52B682CAC0066A78F /* TodoListItemCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TodoListItemCell.swift; sourceTree = "<group>"; };
 		7C1E62042AE6B9DF00978667 /* TodoListApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TodoListApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C1E62072AE6B9DF00978667 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7C1E62092AE6B9DF00978667 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -140,6 +142,7 @@
 		7CD0F0EE2AEC3715005F0AA7 /* View */ = {
 			isa = PBXGroup;
 			children = (
+				7C1001C52B682CAC0066A78F /* TodoListItemCell.swift */,
 				7CD0F0EF2AEC3725005F0AA7 /* TodoListUserInputContainerView.swift */,
 			);
 			path = View;
@@ -220,6 +223,7 @@
 				7C360A4F2B5D15BF008EAFD0 /* CategoryListDataHandler.swift in Sources */,
 				7C1E62202AE6C23400978667 /* TodoListViewController.swift in Sources */,
 				7C1E62082AE6B9DF00978667 /* AppDelegate.swift in Sources */,
+				7C1001C62B682CAC0066A78F /* TodoListItemCell.swift in Sources */,
 				7C676C092B39BFEF00E10959 /* TodoListDataHandler.swift in Sources */,
 				7CAA5E812B4C481A007041C4 /* CategoryListItemViewData.swift in Sources */,
 				7C1E620A2AE6B9DF00978667 /* SceneDelegate.swift in Sources */,

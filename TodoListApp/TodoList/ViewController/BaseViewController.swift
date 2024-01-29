@@ -65,7 +65,6 @@ class BaseViewController: UIViewController {
 
         let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(sender:)))
         tableView.addGestureRecognizer(longPress)
-
     }
 
     required init?(coder: NSCoder) {

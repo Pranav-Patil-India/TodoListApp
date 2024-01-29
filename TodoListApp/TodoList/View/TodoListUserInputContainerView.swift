@@ -81,6 +81,10 @@ class TodoListUserInputContainerView: UIView {
         placeholderLabel.isHidden = false
     }
 
+    func hidePlaceholder() {
+        placeholderLabel.isHidden = true
+    }
+
     // MARK: - Private methods
 
     private func setupUserInputContainerView() {

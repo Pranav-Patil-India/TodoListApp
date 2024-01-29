@@ -54,6 +54,21 @@ class TodoListDataHandler {
         }
     }
 
+    func updateTodoListItemTitle(from previousItemTitle: String, to newItemTitle: String) {
+        guard let itemIndexToUpdate = todoListItemModels.firstIndex(where: { $0.title == previousItemTitle }) else {
+            assertionFailure("Unable to find required todo list item.")
+            return
+        }
+
+        if todoListItemModels.contains(where: { $0.title == newItemTitle }) {
+            // TODO: Add support to display popup for "Item already exists"
+            return
+        }
+
+        todoListItemModels[itemIndexToUpdate].title = newItemTitle
+        LocalDataService.saveContextData()
+    }
+
     func deleteTodoListItems(viewDatas: [TodoListItemViewData]) {
         var itemsToDelete = [TodoListItemModel]()
         viewDatas.forEach { viewData in

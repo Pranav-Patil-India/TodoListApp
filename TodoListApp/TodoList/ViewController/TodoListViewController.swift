@@ -15,6 +15,7 @@ class TodoListViewController: BaseViewController {
     private var category: CategoryListItemViewData?
     private var todoListData = [TodoListItemViewData]()
     private var isKeyboardVisible = false
+    private var editingItemIndex: IndexPath? = nil
     private var userInputContainerViewBottomConstraint: NSLayoutConstraint?
     private lazy var hideKeyboardTapGesture = UITapGestureRecognizer(
         target: self,
@@ -35,7 +36,7 @@ class TodoListViewController: BaseViewController {
 
         setupUserInputContainerView()
 
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "TodoListCell")
+        tableView.register(TodoListItemCell.self, forCellReuseIdentifier: "TodoListCell")
         tableView.dataSource = self
         tableView.delegate = self
         tableView.separatorStyle = .none
@@ -133,6 +134,14 @@ class TodoListViewController: BaseViewController {
         view.removeGestureRecognizer(hideKeyboardTapGesture)
     }
 
+    private func enableEditMode(indexPath: IndexPath) {
+        editingItemIndex = indexPath
+        let viewData = todoListData[indexPath.row]
+        userInputContainerView.hidePlaceholder()
+        userInputContainerView.inputTextView.text = viewData.title
+        addButtonTapped()
+    }
+
 }
 
 // MARK: - UITableViewDelegate, UITableViewDataSource
@@ -144,36 +153,17 @@ extension TodoListViewController: UITableViewDelegate, UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell()
-        cell.selectionStyle = .none
-        let todoListData = todoListData[indexPath.row]
-        cell.textLabel?.text = todoListData.title
-        let isCompleted = todoListData.isCompleted
-        cell.imageView?.image = getCheckboxImage(isTaskCompleted: isCompleted, shouldDelete: todoListData.shouldDelete)
-        cell.textLabel?.alpha = isCompleted ? 0.5 : 1
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "TodoListCell", for: indexPath) as? TodoListItemCell else {
+            assertionFailure("Unable to get TodoListItemCell")
+            return UITableViewCell()
+        }
+        cell.delegate = self
+        cell.bind(viewData: todoListData[indexPath.row], isBulkDeleteEnabled: isBulkDeleteEnabled)
         return cell
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let cell = tableView.cellForRow(at: indexPath) else {
-            print("Error getting cell")
-            return
-        }
-
-        if isBulkDeleteEnabled {
-            let viewData = todoListData[indexPath.row]
-            viewData.shouldDelete = !viewData.shouldDelete
-            cell.imageView?.image = getCheckboxImage(shouldDelete: viewData.shouldDelete)
-            return
-        }
-
-        let viewData = todoListData[indexPath.row]
-        let shouldMarkAsCompleted = !viewData.isCompleted
-        viewData.isCompleted = shouldMarkAsCompleted
-        localDataHandler.updateTodoListItem(viewData: viewData)
-
-        cell.imageView?.image = getCheckboxImage(isTaskCompleted: shouldMarkAsCompleted)
-        cell.textLabel?.alpha = shouldMarkAsCompleted ? 0.5 : 1
+        enableEditMode(indexPath: indexPath)
     }
 
     func tableView(_ tableView: UITableView,
@@ -206,12 +196,38 @@ extension TodoListViewController: TodoListUserInputContainerViewDelegate {
             assertionFailure("Category cannot be nil")
             return
         }
-        let viewDataItem = TodoListItemViewData(isCompleted: false, title: inputText, parentCategory: category)
-        if localDataHandler.saveTodoListItem(viewData: viewDataItem) {
-            todoListData.append(viewDataItem)
+
+        if let editingItemIndex,
+           let previousTitle = todoListData[editingItemIndex.row].title,
+           inputText != previousTitle {
+            todoListData[editingItemIndex.row].title = inputText
+            localDataHandler.updateTodoListItemTitle(from: previousTitle, to: inputText)
             tableView.reloadData()
+        } else {
+            let viewDataItem = TodoListItemViewData(isCompleted: false, title: inputText, parentCategory: category)
+            if localDataHandler.saveTodoListItem(viewData: viewDataItem) {
+                todoListData.append(viewDataItem)
+                tableView.reloadData()
+            }
         }
+
         hideKeyboard()
+    }
+
+}
+
+// MARK: - TodoListItemCellDelegate
+
+extension TodoListViewController: TodoListItemCellDelegate {
+
+    func updateTodoListItem(viewData: TodoListItemViewData, shouldUpdateLocalDatabase: Bool) {
+        if let itemIndex = todoListData.firstIndex(where: { $0.title == viewData.title }) {
+            todoListData[itemIndex] = viewData
+        }
+
+        if shouldUpdateLocalDatabase {
+            localDataHandler.updateTodoListItem(viewData: viewData)
+        }
     }
 
 }
