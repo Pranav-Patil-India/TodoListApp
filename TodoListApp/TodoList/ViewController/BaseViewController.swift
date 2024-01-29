@@ -10,6 +10,7 @@ class BaseViewController: UIViewController {
     // MARK: - Properties
 
     var isBulkDeleteEnabled = false
+
     private var tableViewBottomWithDeleteContainer: NSLayoutConstraint?
     private var tableViewBottomWithViewController: NSLayoutConstraint?
 
@@ -20,6 +21,7 @@ class BaseViewController: UIViewController {
     }()
 
     private let deleteButtonContainerView = UIView()
+
     private lazy var seperator: UIView = {
         let view = UIView()
         view.heightAnchor.constraint(equalToConstant: 0.5).isActive = true

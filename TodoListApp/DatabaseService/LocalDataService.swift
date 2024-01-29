@@ -32,14 +32,24 @@ class LocalDataService {
         return categoryListItemModel
     }
 
-    static func fetchCategoryData() -> [CategoryListItemModel] {
+    static func fetchCategoryData(for categoryName: String? = nil) -> [CategoryListItemModel] {
         let request: NSFetchRequest<CategoryListItemModel> = CategoryListItemModel.fetchRequest()
+
+        if let categoryName {
+            request.predicate = NSPredicate(format: "name == %@", argumentArray: [categoryName])
+        }
+
         do {
             return try context.fetch(request)
         } catch {
             print("Error fetching CategoryListItemModel data, error = \(error)")
             return []
         }
+    }
+
+    static func deleteCategoryItems(items: [CategoryListItemModel]) {
+        items.forEach { context.delete($0) }
+        saveContextData()
     }
 
     // MARK: - TODO list
@@ -54,8 +64,8 @@ class LocalDataService {
         return todoListItemModel
     }
 
-    static func fetchTodoListData(category: CategoryListItemModel?) -> [TodoListItemModel] {
-        guard let categoryName = category?.name else {
+    static func fetchTodoListData(categoryName: String?) -> [TodoListItemModel] {
+        guard let categoryName else {
             assertionFailure("Category name cannot be nil")
             return []
         }

@@ -12,7 +12,7 @@ class TodoListViewController: BaseViewController {
 
     // MARK: - Private properties
 
-    private var category: CategoryListItemModel?
+    private var category: CategoryListItemViewData?
     private var todoListData = [TodoListItemViewData]()
     private var isKeyboardVisible = false
     private var userInputContainerViewBottomConstraint: NSLayoutConstraint?
@@ -26,11 +26,11 @@ class TodoListViewController: BaseViewController {
         return containerView
     }()
 
-    private lazy var localDataHandler = LocalDataHandler()
+    private lazy var localDataHandler = TodoListDataHandler()
 
     // MARK: - Inits
 
-    init(category: CategoryListItemModel) {
+    init(category: CategoryListItemViewData) {
         super.init()
 
         setupUserInputContainerView()
@@ -54,8 +54,6 @@ class TodoListViewController: BaseViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        print("####### path = \(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))")
 
         // Keyboard observer
         NotificationCenter.default.addObserver(
